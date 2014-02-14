@@ -2,6 +2,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 module Game (
   GameState(..)
+  , BinaryGamePlay(..)
   , runTurn
   ) where
 
@@ -9,6 +10,17 @@ module Game (
 class GameState s a | s -> a where
   isEndGame :: s -> Bool
   advance :: s -> a -> s
+
+-- | Binary Play has 1-1 mapping to boolean
+class BinaryGamePlay p where
+  toBoolean :: p -> Bool
+  fromBoolean :: Bool -> p
+  opponent :: p -> p
+  opponent = fromBoolean. not. toBoolean
+
+instance BinaryGamePlay Bool where
+  toBoolean = id
+  fromBoolean = id
 
 -- | Advance turn
 runTurn :: (Monad m, GameState s a) => s -> m a -> m (Either s s)

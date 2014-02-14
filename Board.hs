@@ -15,6 +15,7 @@ module Board (
   , diagonal
   , getBoard
   , setBoard
+  , mapBoard
   , emptyBoard
 
   , allRows
@@ -22,6 +23,7 @@ module Board (
   , allDiagonals
   , allElements
   , allLocations
+  , emptyLocations
   ) where
 
 import Data.List
@@ -80,6 +82,11 @@ allColumns b = (take (size b). fmap (fmap head). iterate (fmap tail)) (board b)
 allDiagonals b = fmap (diagonal b) [False, True]
 allElements = foldr (++) []. allRows
 allLocations b = [(x, y) | let xs = [0..(size b) - 1], x <- xs, y <- xs]
+
+-- | Unfilled location on board
+emptyLocations :: (Eq a) => Board a -> [Location]
+emptyLocations b = filter (\l -> getBoard l b == Nothing) $ allLocations b
+
 -- | Get board location
 getBoard :: Location -> Board a -> Maybe a
 getBoard (m, n) (Board b) = b !! m !! n
@@ -89,6 +96,10 @@ setBoard :: Location -> Board a -> a -> Board a
 setBoard (m, n) (Board b) elem = let
   row = replaceAt n (Just elem) (b !! m)
   in Board $ replaceAt m row b
+
+-- | Convert Board
+mapBoard :: (a -> b) -> Board a -> Board b
+mapBoard f = Board. fmap (fmap (fmap f)). board
 
 -- | Empty Board
 emptyBoard :: Int -> Board a

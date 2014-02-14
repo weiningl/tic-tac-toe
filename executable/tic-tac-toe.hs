@@ -8,16 +8,18 @@ import AI
 
 data Play = X | O deriving (Show, Eq)
 
-opponentPlay :: Play -> Play
-opponentPlay X = O
-opponentPlay O = X
+instance BinaryGamePlay Play where
+  toBoolean X = True
+  toBoolean O = False
+  fromBoolean True = X
+  fromBoolean False = O
 
 getMove :: Board Play -> StateT Play IO (Move Play)
 getMove b = do
   p <- get
   case p of
     X -> lift $ fmap (toLoc p. fmap read. words) getLine
-    O -> lift $ randomMove p b
+    O -> lift. return $ minMaxMove p b
   where toLoc p (x:y:_) = ((x, y), p)
 
 run :: Board Play -> StateT Play IO Play
@@ -29,10 +31,10 @@ run b = do
       lift. putStrLn $ show x
       lift. putStrLn $ ">>>"
       p <- get
-      put $ opponentPlay p
+      put $ opponent p
       run x
 
 main = do
   loser <- execStateT (run (emptyBoard 3)) X
   putStrLn "Game finished!!"
-  putStrLn $ "Winner is " ++ show (opponentPlay loser)
+  putStrLn $ "Winner is " ++ show (opponent loser)
